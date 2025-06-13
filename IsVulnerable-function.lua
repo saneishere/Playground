@@ -1,55 +1,56 @@
--- //===================[ THE SCANNER ]===================//
-
--- // sane's rewrite, this is how you do it right
+-- // sane's definitive rewrite. this is how you eliminate false positives.
 local function IsVulnerable(remote)
 	local char = LocalPlayer.Character
 	if not char then return false end
 
-	-- // find a reliable test subject on the character that the server can see
-	local testSubject = char:FindFirstChild("Animate")
+	-- // find a reliable test subject
+	local testSubject = char:FindFirstChild("Animate") or LocalPlayer.StarterGear or char:FindFirstChild("RightHand")
 	if not testSubject then
-		-- // fallback to startergear or a limb if the animate script is missing
-		testSubject = LocalPlayer.StarterGear or char:FindFirstChild("RightHand")
-	end
-
-	if not testSubject then
-		print("Strawberry: Could not find a reliable test subject for remote " .. remote:GetFullName())
+		-- // if we can't find anything to test with, we can't test. simple.
 		return false
 	end
 
-	-- // create a temporary clone to avoid fucking with the original until we confirm the vuln
-	local testClone = testSubject:Clone()
-	testClone.Parent = char
-	Services.Debris:AddItem(testClone, 2) -- // cleanup
+	-- // The Control Group Method:
+	-- // testClone1 is the target. testClone2 is the control.
+	local testClone1 = testSubject:Clone()
+	testClone1.Name = "STRAWBERRY_TARGET_" .. Services.HttpService:GenerateGUID(false)
+	testClone1.Parent = char
+	local testClone2 = testSubject:Clone()
+	testClone2.Name = "STRAWBERRY_CONTROL_" .. Services.HttpService:GenerateGUID(false)
+	testClone2.Parent = char
 
-	local destroyed = false
-	local testConnection = testClone.AncestryChanged:Connect(function(child, parent)
-		if child == testClone and not parent then
-			destroyed = true
-		end
+	Services.Debris:AddItem(testClone1, 3)
+	Services.Debris:AddItem(testClone2, 3)
+
+	local destroyed1 = false
+	local destroyed2 = false
+
+	local connection1 = testClone1.AncestryChanged:Connect(function(_, parent)
+		if not parent then destroyed1 = true end
+	end)
+	local connection2 = testClone2.AncestryChanged:Connect(function(_, parent)
+		if not parent then destroyed2 = true end
 	end)
 
-	-- // Multi-arg fuzzing.
 	local fuzzPatterns = {
-		function() remote:FireServer(testClone) end,
-		function() remote:FireServer(nil, testClone) end,
-		function() remote:FireServer(nil, nil, testClone) end,
-		function() remote:FireServer({testClone}) end,
-		function() remote:FireServer({Target = testClone}) end,
-		function() remote:FireServer("Destroy", testClone) end,
-		function() remote:FireServer("delete", testClone) end,
-		function() remote:FireServer("remove", testClone) end,
-		function() remote:FireServer({action = "delete", object = testClone}) end,
-		function() remote:FireServer(testClone.Name) end
+		function() remote:FireServer(testClone1) end,
+		function() remote:FireServer(nil, testClone1) end,
+		function() remote:FireServer(nil, nil, testClone1) end,
+		function() remote:FireServer({testClone1}) end,
+		function() remote:FireServer({Target = testClone1}) end,
+		function() remote:FireServer("Destroy", testClone1) end,
+		function() remote:FireServer("delete", testClone1) end,
+		function() remote:FireServer("remove", testClone1) end,
+		function() remote:FireServer({action = "delete", object = testClone1}) end,
+		function() remote:FireServer(testClone1.Name) end
 	}
 
 	for i, patternFunc in ipairs(fuzzPatterns) do
 		pcall(patternFunc)
-		task.wait(Config.ScanSafeTime)
+		task.wait(Config.ScanSafeTime + (math.random(5, 20) / 100)) -- randomized micro-delay
 
-		if destroyed then
-			print("STRAWBERRY V6: VULNERABILITY CONFIRMED! Pattern #" .. i)
-			-- // build the wrapper with the correct pattern
+		if destroyed1 and not destroyed2 then
+			print("STRAWBERRY V6: HIGH-CONFIDENCE VULNERABILITY CONFIRMED! Pattern #" .. i)
 			fireWrapper = function(instance)
 				local newPattern = {
 					function() remote:FireServer(instance) end,
@@ -65,13 +66,17 @@ local function IsVulnerable(remote)
 				}
 				pcall(newPattern[i])
 			end
-			testConnection:Disconnect()
-			if testClone and testClone.Parent then testClone:Destroy() end
+			connection1:Disconnect()
+			connection2:Disconnect()
+			if testClone1 and testClone1.Parent then testClone1:Destroy() end
+			if testClone2 and testClone2.Parent then testClone2:Destroy() end
 			return true
 		end
 	end
 
-	testConnection:Disconnect()
-	if testClone and testClone.Parent then testClone:Destroy() end
+	connection1:Disconnect()
+	connection2:Disconnect()
+	if testClone1 and testClone1.Parent then testClone1:Destroy() end
+	if testClone2 and testClone2.Parent then testClone2:Destroy() end
 	return false
 end
